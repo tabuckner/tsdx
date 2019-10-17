@@ -172,7 +172,10 @@ prog
   .command('create <pkg>')
   .describe('Create a new package with TSDX')
   .example('create mypackage')
-  .option('--template', 'Specify a template. Allowed choices: [basic, react]')
+  .option(
+    '--template',
+    'Specify a template. Allowed choices: [basic, react, basic-alt]'
+  )
   .example('create --template react mypackage')
   .action(async (pkg: string, opts: any) => {
     console.log(
@@ -220,6 +223,25 @@ prog
         choices: ['basic', 'react'],
       });
 
+      const testOrganizationPrompt = new Select({
+        message: 'Where do you prefer your test to live?',
+        choices: [
+          {
+            name: 'In a separate directory',
+            message: 'In a separate directory',
+            value: 'basic',
+          },
+          {
+            name: 'Next to the code',
+            message: 'Next to the code',
+            value: 'basic-alt',
+          },
+        ],
+        result() {
+          return this.focused.value;
+        },
+      });
+
       if (opts.template) {
         template = opts.template.trim();
         if (!prompt.choices.includes(template)) {
@@ -228,6 +250,9 @@ prog
         }
       } else {
         template = await prompt.run();
+        if (template === 'basic') {
+          template = await testOrganizationPrompt.run();
+        }
       }
 
       bootSpinner.start();
